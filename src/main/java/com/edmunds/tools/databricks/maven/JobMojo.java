@@ -21,6 +21,7 @@ import com.edmunds.rest.databricks.DTO.RunDTO;
 import com.edmunds.rest.databricks.DTO.RunNowDTO;
 import com.edmunds.rest.databricks.DTO.RunsDTO;
 import com.edmunds.rest.databricks.DatabricksRestException;
+import com.edmunds.tools.databricks.maven.factory.JobTemplateModelFactory;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -174,4 +175,8 @@ public class JobMojo extends BaseDatabricksJobMojo {
         this.streamingOnly = streamingOnly;
     }
 
+    @Override
+    protected JobTemplateModelFactory getJobTemplateModelFactory() {
+        return getProjectJobTemplateModelFactory();
+    }
 }

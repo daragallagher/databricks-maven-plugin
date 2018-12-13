@@ -30,7 +30,7 @@
                 <version>${project.version}</version>
                 <configuration>
                     <environment>QA</environment>
-                    <databricksRepo>my-bucket</databricksRepo>
+                    <jobTemplateModelFile>mySerializedProperties.json</jobTemplateModelFile>
                 </configuration>
                 <executions>
                     <execution>

@@ -22,6 +22,8 @@ import com.edmunds.rest.databricks.DTO.JobSettingsDTO;
 import com.edmunds.rest.databricks.DatabricksRestException;
 import com.edmunds.rest.databricks.service.JobService;
 import com.edmunds.tools.databricks.maven.model.JobTemplateModel;
+import com.edmunds.tools.databricks.maven.factory.JobTemplateModelFactory;
+import com.edmunds.tools.databricks.maven.factory.JobTemplateModelFromProjectFactory;
 import com.edmunds.tools.databricks.maven.util.ObjectMapperUtils;
 import com.edmunds.tools.databricks.maven.validation.ValidationUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,7 +40,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.io.FileUtils;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -73,19 +75,6 @@ public abstract class BaseDatabricksJobMojo extends BaseDatabricksMojo {
     boolean failOnDuplicateJobName = true;
 
     public final static String MODEL_FILE_NAME = "job-template-model.json";
-
-    /**
-     * This file is used by the databricks-maven-plugin internally to inject information from maven.
-     */
-    @Parameter(property = "jobTemplateModelFile", defaultValue = "${project.build.directory}/databricks-plugin/" + MODEL_FILE_NAME)
-    protected File jobTemplateModelFile;
-
-    /**
-     * If set to true, this project is being built locally.
-     */
-    //TODO this parameter should be removed
-    @Parameter(property = "isLocalBuild", defaultValue = "true")
-    protected boolean isLocalBuild = true;
 
     Long getJobId(String jobName) throws MojoExecutionException {
         try {
@@ -127,26 +116,13 @@ public abstract class BaseDatabricksJobMojo extends BaseDatabricksMojo {
     }
 
     JobTemplateModel getJobTemplateModel() throws MojoExecutionException {
-        try {
-            JobTemplateModel jobTemplateModel;
-            // TODO this if/else should be done with polymorphism. It isn't needed in local builds
-            if (jobTemplateModelFile.exists()) {
-                String jobTemplateModelJson = FileUtils.readFileToString(jobTemplateModelFile);
-                jobTemplateModel = ObjectMapperUtils.deserialize(jobTemplateModelJson, JobTemplateModel.class);
-            } else {
-                if (isLocalBuild) {
-                    if (databricksRepo == null) {
-                        throw new MojoExecutionException("databricksRepo must be set!");
-                    }
-                    jobTemplateModel = new JobTemplateModel(project, environment, databricksRepo, databricksRepoKey);
-                } else {
-                    throw new MojoExecutionException(String.format("[%s] file was not found in the build. Please ensure prepare-package was ran during build.", MODEL_FILE_NAME));
-                }
-            }
-            return jobTemplateModel;
-        } catch (IOException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
+        return getJobTemplateModelFactory().getJobTemplateModel();
+    }
+
+    protected abstract JobTemplateModelFactory getJobTemplateModelFactory();
+
+    protected JobTemplateModelFactory getProjectJobTemplateModelFactory() {
+        return new JobTemplateModelFromProjectFactory(project, environment, databricksRepo, databricksRepoKey);
     }
 
     String getJobSettingsFromTemplate(String templateText, JobTemplateModel jobTemplateModel) throws MojoExecutionException {
@@ -361,9 +337,4 @@ public abstract class BaseDatabricksJobMojo extends BaseDatabricksMojo {
         }
 
     }
-
-    void setJobTemplateModelFile(File jobTemplateModelFile) {
-        this.jobTemplateModelFile = jobTemplateModelFile;
-    }
-
 }

@@ -19,6 +19,7 @@ package com.edmunds.tools.databricks.maven;
 import com.edmunds.rest.databricks.DTO.JobDTO;
 import com.edmunds.rest.databricks.DTO.JobSettingsDTO;
 import com.edmunds.rest.databricks.DatabricksRestException;
+import com.edmunds.tools.databricks.maven.factory.JobTemplateModelFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 
@@ -64,5 +65,10 @@ public class UpsertJobMojo extends BaseDatabricksJobMojo {
                         e);
             }
         }
+    }
+
+    @Override
+    protected JobTemplateModelFactory getJobTemplateModelFactory() {
+        return getProjectJobTemplateModelFactory();
     }
 }

@@ -20,7 +20,6 @@ import java.util.Arrays;
 @Mojo(name = "prepare-library-resources", requiresProject = true, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PrepareLibraryResources extends BaseWorkspaceMojo {
 
-
     public static final String JAR = "jar";
 
     public static final String LIBRARY_MAPPING_FILE_NAME = "library-mapping.json";
@@ -68,11 +67,7 @@ public class PrepareLibraryResources extends BaseWorkspaceMojo {
                 String libraryMappingModelJson = FileUtils.readFileToString(libaryMappingFile);
                 libraryClustersModel = ObjectMapperUtils.deserialize(libraryMappingModelJson, LibraryClustersModel.class);
             } else {
-                if (isLocalBuild) {
-                    libraryClustersModel = new LibraryClustersModel(createArtifactPath(), Arrays.asList(clusters));
-                } else {
-                    throw new MojoExecutionException(String.format("[%s] file was not found in the build. Please ensure prepare-package was ran during build.", LIBRARY_MAPPING_FILE_NAME));
-                }
+                libraryClustersModel = new LibraryClustersModel(createArtifactPath(), Arrays.asList(clusters));
             }
             return libraryClustersModel;
         } catch (IOException e) {
