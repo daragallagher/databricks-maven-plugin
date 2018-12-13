@@ -44,7 +44,6 @@ public class LibraryNoProjectMojoTest extends DatabricksMavenPluginTestHarness {
         super.beforeMethod();
     }
 
-    //TODO actually test the library functionality!
     @Test
     public void install_whenClusterMappingExistsAndonlyOneCluster_attachesLibraryToExistingCluster() throws Exception {
         LibraryMojoNoProject underTest = getOverridesMojo(GOAL, "install");

@@ -4,10 +4,11 @@ import java.util.Collection;
 
 /**
  * Used to serialize artifact and cluster data, for library attachment.
+ *
+ * //TODO there is no reason to have a separate LibraryClustersModel and JobTemplatesModel.
+ * // We should have file where we serialize all information pertaining to a project for None-Project invocation.
  */
 public class LibraryClustersModel {
-    //TODO we can use the artifact from the template factory instead. In fact, clusterNames should be saved there as
-    // well?
     private String artifactPath;
     private Collection<String> clusterNames;
 

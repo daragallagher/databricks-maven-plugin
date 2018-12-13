@@ -32,6 +32,9 @@ public class ClusterUtils {
 
     public static List<String> convertClusterNamesToIds(ClusterService clusterService, Collection<String> clusterNamesToConvert) throws MojoExecutionException {
         ArrayList clusterIds = new ArrayList<String>();
+        if (clusterNamesToConvert.isEmpty()) {
+            return clusterIds;
+        }
         try {
             ClusterInfoDTO[] clusters = clusterService.list();
             if (clusters == null) {
@@ -45,6 +48,7 @@ public class ClusterUtils {
         } catch (DatabricksRestException | IOException e) {
             throw new MojoExecutionException("Could not list clusters.", e);
         }
+        //TODO should log if not all clusters could be found!
         return clusterIds;
     }
 }

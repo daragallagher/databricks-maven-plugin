@@ -16,7 +16,13 @@
 
 package com.edmunds.tools.databricks.maven;
 
+import com.edmunds.rest.databricks.DTO.ClusterInfoDTO;
+import com.edmunds.rest.databricks.DTO.ClusterStateDTO;
+import com.edmunds.rest.databricks.DTO.LibraryDTO;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,12 +44,75 @@ public class LibraryMojoTest extends DatabricksMavenPluginTestHarness {
         super.beforeMethod();
     }
 
-    //TODO actually test the library functionality!
     @Test
-    public void testCreateArtifactPath_default() throws Exception {
+    public void testCreateArtifactPath_whenNoClustersSpecified_DoesNothing() throws Exception {
         LibraryMojo underTest = getNoOverridesMojo(GOAL);
         assertThat(underTest.createDeployedArtifactPath(), is("s3://my-bucket/artifacts/unit-test-group" +
                 "/unit-test-artifact/1.0.0-SNAPSHOT/unit-test-artifact-1.0.0-SNAPSHOT.jar"));
+
+        underTest.execute();
+
+        Mockito.verify(libraryService, Mockito.times(0)).install(Matchers.anyString(), Matchers.any());
+    }
+
+    @Test
+    public void install_whenClusterMappingExistsAndonlyOneCluster_attachesLibraryToExistingCluster() throws Exception {
+        LibraryMojo underTest = getOverridesMojo(GOAL, "install");
+        ClusterInfoDTO clusterOne = createClusterInfoDTO("1", "my-test-cluster");
+        ClusterInfoDTO[] clusters = {clusterOne};
+        Mockito.when(clusterService.list()).thenReturn(clusters);
+        Mockito.when(clusterService.getInfo("1")).thenReturn(clusterOne);
+        ArgumentCaptor<LibraryDTO[]> libraryDTOArgumentCaptor = ArgumentCaptor.forClass(LibraryDTO[].class);
+
+        underTest.execute();
+
+        Mockito.verify(libraryService).install(Matchers.anyString(), libraryDTOArgumentCaptor.capture());
+        Mockito.verify(clusterService).delete("1");
+        Mockito.verify(clusterService).start("1");
+
+        LibraryDTO libraryOne = libraryDTOArgumentCaptor.getValue()[0];
+        assertEquals("s3://my-bucket/artifacts/unit-test-group/unit-test-artifact/1.0.0-SNAPSHOT/unit-test-artifact" +
+            "-1.0.0-SNAPSHOT.jar", libraryOne.getJar());
+    }
+
+    @Test
+    public void unInstall_whenClusterMappingExistsAndonlyOneCluster_attachesLibraryToExistingCluster() throws
+                                                                                                       Exception {
+        LibraryMojo underTest = getOverridesMojo(GOAL, "uninstall");
+        ClusterInfoDTO clusterOne = createClusterInfoDTO("1", "my-test-cluster");
+        ClusterInfoDTO[] clusters = {clusterOne};
+        Mockito.when(clusterService.list()).thenReturn(clusters);
+        Mockito.when(clusterService.getInfo("1")).thenReturn(clusterOne);
+        ArgumentCaptor<LibraryDTO[]> libraryDTOArgumentCaptor = ArgumentCaptor.forClass(LibraryDTO[].class);
+
+        underTest.execute();
+
+        Mockito.verify(libraryService).uninstall(Matchers.anyString(), libraryDTOArgumentCaptor.capture());
+        Mockito.verify(clusterService).delete("1");
+        Mockito.verify(clusterService).start("1");
+
+        LibraryDTO libraryOne = libraryDTOArgumentCaptor.getValue()[0];
+        assertEquals("s3://my-bucket/artifacts/unit-test-group/unit-test-artifact/1.0.0-SNAPSHOT/unit-test-artifact" +
+            "-1.0.0-SNAPSHOT.jar", libraryOne.getJar());
+    }
+
+    //TODO proper behavior should be to log here?
+    @Test
+    public void unInstall_whenClusterCantBeFound_doesNothing() throws
+                                                                                                       Exception {
+        LibraryMojo underTest = getOverridesMojo(GOAL, "uninstall");
+        ClusterInfoDTO clusterOne = createClusterInfoDTO("1", "not-my-cluster");
+        ClusterInfoDTO[] clusters = {clusterOne};
+        Mockito.when(clusterService.list()).thenReturn(clusters);
+        Mockito.when(clusterService.getInfo("1")).thenReturn(clusterOne);
+        ArgumentCaptor<LibraryDTO[]> libraryDTOArgumentCaptor = ArgumentCaptor.forClass(LibraryDTO[].class);
+
+        underTest.execute();
+
+        Mockito.verify(libraryService, Mockito.times(0)).uninstall(Matchers.anyString(), libraryDTOArgumentCaptor
+            .capture());
+        Mockito.verify(clusterService, Mockito.times(0)).delete("1");
+        Mockito.verify(clusterService, Mockito.times(0)).start("1");
     }
 
     @Test
@@ -61,5 +130,13 @@ public class LibraryMojoTest extends DatabricksMavenPluginTestHarness {
     public void testCreateArtifactPath_succeedsWithOverrides() throws Exception {
         LibraryMojo underTest = (LibraryMojo) getOverridesMojo(GOAL);
         assertThat(underTest.createDeployedArtifactPath(), is("s3://my-bucket/artifacts/my-destination"));
+    }
+
+    private ClusterInfoDTO createClusterInfoDTO(String clusterId, String clusterName) {
+        ClusterInfoDTO clusterInfoDTO = new ClusterInfoDTO();
+        clusterInfoDTO.setClusterId(clusterId);
+        clusterInfoDTO.setClusterName(clusterName);
+        clusterInfoDTO.setState(ClusterStateDTO.RUNNING);
+        return clusterInfoDTO;
     }
 }
