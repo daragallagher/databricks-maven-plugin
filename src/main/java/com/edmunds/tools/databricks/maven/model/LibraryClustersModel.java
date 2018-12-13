@@ -6,7 +6,8 @@ import java.util.Collection;
  * Used to serialize artifact and cluster data, for library attachment.
  */
 public class LibraryClustersModel {
-
+    //TODO we can use the artifact from the template factory instead. In fact, clusterNames should be saved there as
+    // well?
     private String artifactPath;
     private Collection<String> clusterNames;
 

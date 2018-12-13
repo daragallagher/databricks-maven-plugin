@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-//Requires building beforehand??
 public class LibraryMojoTest extends DatabricksMavenPluginTestHarness {
 
     private final String GOAL = "library";
@@ -42,8 +41,8 @@ public class LibraryMojoTest extends DatabricksMavenPluginTestHarness {
     //TODO actually test the library functionality!
     @Test
     public void testCreateArtifactPath_default() throws Exception {
-        LibraryMojo underTest = (LibraryMojo) getNoOverridesMojo(GOAL);
-        assertThat(underTest.createArtifactPath(), is("s3://my-bucket/artifacts/unit-test-group" +
+        LibraryMojo underTest = getNoOverridesMojo(GOAL);
+        assertThat(underTest.createDeployedArtifactPath(), is("s3://my-bucket/artifacts/unit-test-group" +
                 "/unit-test-artifact/1.0.0-SNAPSHOT/unit-test-artifact-1.0.0-SNAPSHOT.jar"));
     }
 
@@ -61,6 +60,6 @@ public class LibraryMojoTest extends DatabricksMavenPluginTestHarness {
     @Test
     public void testCreateArtifactPath_succeedsWithOverrides() throws Exception {
         LibraryMojo underTest = (LibraryMojo) getOverridesMojo(GOAL);
-        assertThat(underTest.createArtifactPath(), is("s3://my-bucket/artifacts/my-destination"));
+        assertThat(underTest.createDeployedArtifactPath(), is("s3://my-bucket/artifacts/my-destination"));
     }
 }

@@ -34,6 +34,9 @@ public class ClusterUtils {
         ArrayList clusterIds = new ArrayList<String>();
         try {
             ClusterInfoDTO[] clusters = clusterService.list();
+            if (clusters == null) {
+                throw new MojoExecutionException("Could not list clusters.");
+            }
             for (ClusterInfoDTO cluster : clusters) {
                 if (clusterNamesToConvert.contains(cluster.getClusterName())) {
                     clusterIds.add(cluster.getClusterId());

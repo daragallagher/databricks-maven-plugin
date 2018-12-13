@@ -1,5 +1,6 @@
 package com.edmunds.tools.databricks.maven;
 
+import com.edmunds.tools.databricks.maven.factory.LibraryClustersModelFromProjectFactory;
 import com.edmunds.tools.databricks.maven.model.LibraryClustersModel;
 import com.edmunds.tools.databricks.maven.util.ObjectMapperUtils;
 import org.apache.commons.io.FileUtils;
@@ -18,26 +19,12 @@ import java.util.Arrays;
  * Prepares the library-mapping.json file such that we can run library attachment, sans project later (e.g. during a build).
  */
 @Mojo(name = "prepare-library-resources", requiresProject = true, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class PrepareLibraryResources extends BaseWorkspaceMojo {
-
-    public static final String JAR = "jar";
+public class PrepareLibraryResources extends BaseLibraryMojo {
 
     public static final String LIBRARY_MAPPING_FILE_NAME = "library-mapping.json";
 
     @Parameter(property = "libaryMappingFile", defaultValue = "${project.build.directory}/databricks-plugin/" + LIBRARY_MAPPING_FILE_NAME)
-    protected File libaryMappingFile;
-
-    /**
-     * This should be a list of cluster names to install to.
-     */
-    @Parameter(property = "clusters")
-    protected String[] clusters;
-
-    /**
-     * The version of the jar to attach to the clusters. Defaults to the current project version.
-     */
-    @Parameter(property = "version", defaultValue = "${project.version}")
-    protected String version;
+    protected File libaryMappingFileOutput;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -48,7 +35,7 @@ public class PrepareLibraryResources extends BaseWorkspaceMojo {
         if (project.getArtifact().getType().equals(JAR)) {
             if (ArrayUtils.isNotEmpty(clusters)) {
                 try {
-                    FileUtils.writeStringToFile(libaryMappingFile, ObjectMapperUtils.serialize(getLibraryClustersModel()));
+                    FileUtils.writeStringToFile(libaryMappingFileOutput, ObjectMapperUtils.serialize(getLibraryClustersModel()));
                 } catch (IOException e) {
                     throw new MojoExecutionException(e.getMessage(), e);
                 }
@@ -57,21 +44,6 @@ public class PrepareLibraryResources extends BaseWorkspaceMojo {
             }
         } else {
             getLog().warn("non jar artifact found, skipping");
-        }
-    }
-
-    protected LibraryClustersModel getLibraryClustersModel() throws MojoExecutionException {
-        try {
-            LibraryClustersModel libraryClustersModel;
-            if (libaryMappingFile.exists()) {
-                String libraryMappingModelJson = FileUtils.readFileToString(libaryMappingFile);
-                libraryClustersModel = ObjectMapperUtils.deserialize(libraryMappingModelJson, LibraryClustersModel.class);
-            } else {
-                libraryClustersModel = new LibraryClustersModel(createArtifactPath(), Arrays.asList(clusters));
-            }
-            return libraryClustersModel;
-        } catch (IOException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 }

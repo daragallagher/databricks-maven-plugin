@@ -29,14 +29,13 @@
                 <artifactId>databricks-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <configuration>
-                    <databricksRepo>my-bucket/artifacts</databricksRepo>
-                    <clusters>my-test-cluster,my-other-cluster</clusters>
+                    <libraryMappingFile>my-cluster-file.json</libraryMappingFile>
+                    <libraryCommand>UNINSTALL</libraryCommand>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-library-resources</goal>
-                            <goal>library</goal>
+                            <goal>library-np</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -28,15 +28,11 @@
                 <groupId>com.edmunds</groupId>
                 <artifactId>databricks-maven-plugin</artifactId>
                 <version>${project.version}</version>
-                <configuration>
-                    <databricksRepo>my-bucket/artifacts</databricksRepo>
-                    <clusters>my-test-cluster,my-other-cluster</clusters>
-                </configuration>
+                <configuration></configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-library-resources</goal>
-                            <goal>library</goal>
+                            <goal>library-np</goal>
                         </goals>
                     </execution>
                 </executions>

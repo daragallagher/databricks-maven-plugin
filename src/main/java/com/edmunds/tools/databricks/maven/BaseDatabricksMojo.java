@@ -174,7 +174,7 @@ public abstract class BaseDatabricksMojo extends AbstractMojo {
         }
     }
 
-    String createArtifactPath() throws MojoExecutionException {
+    String createDeployedArtifactPath() throws MojoExecutionException {
         validateRepoProperties();
         String modifiedDatabricksRepo = databricksRepo;
         String modifiedDatabricksRepoKey = databricksRepoKey;
